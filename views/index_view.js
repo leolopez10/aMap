@@ -1,16 +1,18 @@
+require("dotenv").config();
 module.exports = function(props) {
     return `
+    
     window.onload = function() {
 
         //Initiate API key
-        L.mapquest.key = 'nkL6LFerG2cvr74dIKmAFOfVpGn5ACIZ';
+        L.mapquest.key = ${process.env.GEOCODER_API_KEY};
     
         //Define current location based of user input in the future
         var chosenLocation = {
-            street: '${props.locations.street}',
-            city: '${props.locations.city}',
-            state: '${props.locations.state}',
-            postalCode: '${props.locations.zipcode}'
+            street: '${props.response.street}',
+            city: '${props.response.city}',
+            state: '${props.response.state}',
+            postalCode: '${props.response.zipcode}'
         }
     
         //Run function create map using the user location
@@ -37,5 +39,6 @@ module.exports = function(props) {
             }).addTo(map);
     
         }
-    }`
+    }
+    `
 }

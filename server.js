@@ -4,7 +4,7 @@ const express = require("express");
 const axios = require("axios");
 const path = require("path");
 const mysql = require("mysql");
-const geoCoder = require("./geoCoder");
+const geocoder = require("./geoCoder");
 
 
 // Setting up port and requiring models for syncing
@@ -39,15 +39,53 @@ connection.connect(function(err) {
     console.log("connected as id " + connection.threadId);
 });
 
+//created data to store addresses
+var locations = {};
 // Requiring our HTML route
 app.get("/", function(req, res) {
-    connection.query("SELECT * FROM locations", function(err, data) {
-            // console.log(data[0]);
-            res.send(main_layout(index_view({ locations: data[0] })))
+    res.sendFile(path.join(__dirname, "./public/index.html"));
+});
+
+// app.get("/map", function(req, res) {
+//     res.sendFile(path.join(__dirname, "./public/map.html"));
+// })
+
+app.post("/", function(req, res) {
+    var userAddress = req.body.address;
+    console.log(userAddress)
+    geocoder.geocode(userAddress)
+        .then(function(data) {
+            console.log(data);
+            // create an object that holds the user 's inputed location
+            let chosenLocation = {
+
+                formattedAddress: data[0].formattedAddress,
+                longitude: data[0].longitude,
+                latitude: data[0].latitude,
+                street: data[0].streetName,
+                city: data[0].city,
+                state: data[0].stateCode,
+                zipcode: data[0].zipcode
+            };
+            console.log(chosenLocation);
+            return chosenLocation;
 
         })
-        // res.sendFile(path.join(__dirname, "./public/map.html"));
-});
+        .then(function(response) {
+            // console.log(response);
+            locations = response;
+            console.log(locations);
+            return res.send(index_view({ response }));
+
+        })
+        .catch(function(err) {
+            console.log(err);
+        });
+
+})
+
+//API route
+
 
 // Syncing our database and logging a message to the user upon success
 app.listen(PORT, function() {
